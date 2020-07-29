@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 
 # $1 contains the path to the configuration file. It is passed in the systemd unit file 
 # When calling the rtpengine command
@@ -15,7 +15,6 @@ if [ "$RUN_RTPENGINE" != "yes" ]; then
 	echo "rtpengine not yet configured. Edit $DEFAULTS first."
 	exit 0
 fi
-
 
 # Gradually fill the options of the command rtpengine which starts the RTPEngine daemon
 # The variables used are sourced from the configuration file rtpengine-conf
@@ -66,11 +65,13 @@ if test "$FORK" = "no" ; then
 	OPTIONS="$OPTIONS --foreground"
 fi
 
+# Module location dependant on distro, but moved here for purposes of ko insertion
+insmod /usr/local/src/rtpengine/kernel-module/xt_RTPENGINE.ko
 	
-modprobe xt_RTPENGINE
 if [ -e /proc/rtpengine/control ]; then
 	echo "del $TABLE" > /proc/rtpengine/control 2>/dev/null
 fi
+
 # Freshly add the iptables rules to forward the udp packets to the iptables-extension "RTPEngine":
 # Remember iptables table = chains, rules stored in the chains
 # -N (create a new chain with the name rtpengine)
